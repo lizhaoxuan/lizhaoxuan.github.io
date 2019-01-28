@@ -1,0 +1,925 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Flutter,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="转载请注明出处：https://lizhaoxuan.github.io 前言为避免传统的源码讲解方式的枯燥乏味，这一次，我尝试换一种方式，带着你以轻松的心态了解Flutter世界里的UI绘制流程，去探究Widget、Element、RenderObject的秘密。 废话不多说，听故事！《帝国的纷争》">
+<meta name="keywords" content="Flutter">
+<meta property="og:type" content="article">
+<meta property="og:title" content="帝国的纷争-Flutter-UI绘制解析">
+<meta property="og:url" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/index.html">
+<meta property="og:site_name" content="暴打小女孩-Blog">
+<meta property="og:description" content="转载请注明出处：https://lizhaoxuan.github.io 前言为避免传统的源码讲解方式的枯燥乏味，这一次，我尝试换一种方式，带着你以轻松的心态了解Flutter世界里的UI绘制流程，去探究Widget、Element、RenderObject的秘密。 废话不多说，听故事！《帝国的纷争》">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/map.jpg">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/android_setText.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/flutter_setText.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/first_build.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/change_build.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/widget_extends.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/mount.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/chajia.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/demoTree.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/dirty1.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/scheduleFrame2.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/meile.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/update2.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/update3.png">
+<meta property="og:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/update4.png">
+<meta property="og:updated_time" content="2019-01-28T04:57:31.734Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="帝国的纷争-Flutter-UI绘制解析">
+<meta name="twitter:description" content="转载请注明出处：https://lizhaoxuan.github.io 前言为避免传统的源码讲解方式的枯燥乏味，这一次，我尝试换一种方式，带着你以轻松的心态了解Flutter世界里的UI绘制流程，去探究Widget、Element、RenderObject的秘密。 废话不多说，听故事！《帝国的纷争》">
+<meta name="twitter:image" content="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/map.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/">
+
+  <title> 帝国的纷争-Flutter-UI绘制解析 | 暴打小女孩-Blog </title>
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?56e0f8da7e01da926bfb931472e9a26d";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">暴打小女孩-Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-github">
+          <a href="https://github.com/lizhaoxuan" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-github"></i> <br>
+            
+            Github
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope="" itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                帝国的纷争-Flutter-UI绘制解析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2019-01-02T16:20:58+08:00" content="2019-01-02">
+              2019-01-02
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2019/01/02/帝国的纷争-FlutterUI绘制解析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/01/02/帝国的纷争-FlutterUI绘制解析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2019/01/02/帝国的纷争-FlutterUI绘制解析/" class="leancloud_visitors" data-flag-title="帝国的纷争-Flutter-UI绘制解析">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>转载请注明出处：<a href="https://lizhaoxuan.github.io">https://lizhaoxuan.github.io</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>为避免传统的源码讲解方式的枯燥乏味，这一次，我尝试换一种方式，带着你以轻松的心态了解Flutter世界里的UI绘制流程，去探究Widget、Element、RenderObject的秘密。</p>
+<p>废话不多说，听故事！《帝国的纷争》</p>
+<a id="more"></a>
+<h2 id="故事"><a href="#故事" class="headerlink" title="故事"></a>故事</h2><p>十载干戈，移动端格局渐定，壁垒分明。</p>
+<p>北方草原金帐王朝Javascript虽内部纷争不断，但却一直窥视中原大陆，数年来袭扰不断，如今已夺得小片领土(ReactNative)。民间盛传：大前端融合之势已现！</p>
+<p>2018年冬，Android边境小城Flutter突然宣布立国！并对两个移动端帝国正式宣战！！短短几日，已攻下数城。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/map.jpg" alt=""></p>
+<p>而今天我们要讲的故事，就发生在战火最严重的Android边陲重镇：View城。</p>
+<p>某日，Android View 城军事会议：</p>
+<p>镇边大将军对手下谋士道：“Flutter 最近对我们发起了数次进攻，已下数城，知己不知彼乃军家大忌！谁能给我说说这个Flutter和我们现在的View到底有什么区别？”</p>
+<p>下方谋士面面相窥，不得已终于一个谋士站了出来：“我愿意替将军前去打探一番！”</p>
+<p>数日后，谋士：“臣卧底归来，探明Flutter与我们View城的主要区别在于编程范式和视图逻辑单元不同”</p>
+<p>将军：“先讲编程范式如何不同？”</p>
+<h3 id="Android-Flutter-编程范式"><a href="#Android-Flutter-编程范式" class="headerlink" title="Android/Flutter 编程范式"></a>Android/Flutter 编程范式</h3><p>将军，我们Android现在视图开发是命令式的，我们的每一个View都直接听从将军(Developer)的指挥，例如：想要变更界面某个文案，便要指明具体TextView调用他的setText方法命令文字发生变更；</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/android_setText.png" alt=""></p>
+<p>而Flutter的视图开发是声明式的，对方的将军要做的是维护一套数据集,以及设定好一套布军计划（WidgetTree），并且为Widget“绑定”数据集中的某个数据，根据这个数据来渲染。<br>例如当需要变更文案时，便改变数据集中的数据，然后直接触发WidgetTree的重新渲染。这样Flutter的将军不再需要关注每一个士兵，大部分的精力都用来维护核心数据即可。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/flutter_setText.png" alt=""></p>
+<p>如果每一次操作都消耗一点将军的精力值，又刚好有同一个数据“绑定”到了多个View或Widget上。命令式的编程需要做的事情是 命令N个View发生变更，消耗N点精力值；</p>
+<p>声明式编程需要做的事情是 变更数据+触发WidgetTree重绘,消耗2点精力值；对精力的解放，也是Flutter可以快速招揽到那么多将军的原因之一。</p>
+<p><strong>将军：”但每次数据变更，都会触发WidgetTree的重绘，消耗的资源未免也太大了吧，我现在虽然多消耗些精力，但不会存在大量对象创建的情况“。</strong></p>
+<h3 id="Widget、Element、RenderObject概念"><a href="#Widget、Element、RenderObject概念" class="headerlink" title="Widget、Element、RenderObject概念"></a>Widget、Element、RenderObject概念</h3><p>谋士：这也是马上要讲的第二点不同。因为WidgetTree会大量的重绘，所以Widget必然是廉价的。</p>
+<p>Flutter UI有三大元素：<strong>Widget、Element、RenderObject</strong>。对应这三者也有三个owner负责管理他们，分别是<strong>WidgetOwner(将军&amp;Developer)、BuildOwner、PipelineOwner</strong>。</p>
+<ul>
+<li><p><strong>Widget</strong>，Widget 并不是真正的士兵，它只是将军手中的棋子，是一些廉价的纯对象，持有一些渲染需要的配置信息，棋子在不断被替换着。</p>
+</li>
+<li><p><strong>RenderObject</strong>，RenderObject 是真正和我们作战的士兵，在概念上和我们Android的View一样，渲染引擎会根据RenderObject来进行真正的绘制，它是相对稳定且昂贵的。</p>
+</li>
+<li><p><strong>Element</strong>，使得不断变化Widget转变为相对稳定的RenderObject的功臣是Element。</p>
+</li>
+</ul>
+<p><strong>WidgetOwner（Developer)</strong> 在不断改变着布军计划，然后向<strong>BuildOwner</strong>发送着一张又一张<strong>计划表（WidgetTree）</strong>，首次的计划表（WidgetTree）会生成一个与之对应的ElementTree，并生成对应的RenderObjectTree。<br><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/first_build.png" alt=""></p>
+<p>后续BuildOwner每次收到新的计划表就与上一次的进行对比，在ElementTree上只更新变化的部分，Element变化之后，与之对应的RenderObject也就更新了。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/change_build.png" alt=""></p>
+<p>可以看到WidgetTree全部被替换了，但ElementTree和RenderObjectTree只替换了变化的部分。</p>
+<p>差点忘了讲 <strong>PipelineOwner</strong>， <strong>PipelineOwner</strong>类似于Android中的ViewRootImpl,管理着真正需要绘制的View，<br>最后PipelineOwner会对RenderObjectTree中发生变化节点的进行layout、paint、合成等等操作，最后交给底层引擎渲染。</p>
+<p>将军：“我大概明白了，看来保证声明式编程性能稳定的核心在于这个Element和BuildOwner。但我看这里还有两个问题，RenderObject好像少了一个节点？你画图画错了吗？还有能给我讲下他是怎么把Widget和RenderObject链接起来，以及发生变化时，BuildOwner是如何做到元素Diff的吗？”</p>
+<h3 id="Widget、Element、RenderObject之间的关系"><a href="#Widget、Element、RenderObject之间的关系" class="headerlink" title="Widget、Element、RenderObject之间的关系"></a>Widget、Element、RenderObject之间的关系</h3><p>首先，每一个Widget家族的老长辈Widget赋予了所有的Widget子类三个关键的能力：保证自身唯一以及定位的Key, 创建Element的 createElement, 和 canUpdate。 canUpdate 的作用后面讲。</p>
+<p>Widget子类里还有一批特别优秀强壮的，是在纸面上代表着有渲染能力的RenderObjectWidget,它还有一个创建 RenderObject的 createRenderObject 方法。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/widget_extends.png" alt=""></p>
+<p>从这里你也看出来了，Widget、Element、RenderObject的创建关系并不是线性传递的，<strong>Element和RenderObject都是Widget创建出来的**</strong>，也并不是每一个Widget都有与之对应的RenderObjectWidget**。这也解释上面图中RenderObjectTree看起来和前面的WidgetTree缺少了一些节点。</p>
+<h3 id="Widget、Element、RenderObject-的第一次创建与关联"><a href="#Widget、Element、RenderObject-的第一次创建与关联" class="headerlink" title="Widget、Element、RenderObject 的第一次创建与关联"></a>Widget、Element、RenderObject 的第一次创建与关联</h3><p>讲第一次创建，一定要从第一个被创建出来的士兵说起。我们都知道Android的ViewTree:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-PhoneWindow</span><br><span class="line">	- DecorView</span><br><span class="line">		- TitleView</span><br><span class="line">		- ContentView</span><br></pre></td></tr></table></figure>
+<p>已经预先有这么多View了，相比Android的ViewTree，Flutter的WidgetTree则要简单的多，只有最底层的root widget。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- RenderObjectToWidgetAdapter&lt;RenderBox&gt;</span><br><span class="line">	- MyApp (自定义)</span><br><span class="line">	- MyMaterialApp （自定义）</span><br></pre></td></tr></table></figure>
+<p>简单介绍一下RenderObjectToWidgetAdapter，不要被他的adapter名字迷惑了，RenderObjectToWidgetAdapter其实是一个RenderObjectWidget，他就是第一个优秀且强壮的Widget。</p>
+<p>这个时候就不得不搬出代码来看了,runApp源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void runApp(Widget app) &#123;</span><br><span class="line">  WidgetsFlutterBinding.ensureInitialized()</span><br><span class="line">    ..attachRootWidget(app)</span><br><span class="line">    ..scheduleWarmUpFrame();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>WidgetsFlutterBinding ”迷信“了一系列的Binding，这些Binding持有了我们上面说的一些owner，比如BuildOwner，PipelineOwner，所以随着WidgetsFlutterBinding的初始化，其他的Binding也被初始化了，此时Flutter 的国家引擎开始转动了！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void attachRootWidget(Widget rootWidget) &#123;</span><br><span class="line">    _renderViewElement = RenderObjectToWidgetAdapter&lt;RenderBox&gt;(</span><br><span class="line">      container: renderView,</span><br><span class="line">      debugShortDescription: &apos;[root]&apos;,</span><br><span class="line">      child: rootWidget</span><br><span class="line">    ).attachToRenderTree(buildOwner, renderViewElement);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>我们最需要关注的是<code>attachRootWidget(app)</code><strong>这个方法,这个方法很神圣</strong>，很多的第一次就在这个方法里实现了！！（将军：“很神圣？你是不叛变了？”），app 是我们传入的自定义Widget，内部会创建RenderObjectToWidgetAdapter，并将app做为它的child的。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/mount.png" alt=""></p>
+<p>Root的创建比较简单：</p>
+<ul>
+<li>1.<code>attachRootWidget(app)</code> 方法创建了Root[Widget]（也就是 RenderObjectToWidgetAdapter）</li>
+<li>2.紧接着调用<code>attachToRenderTree</code>方法创建了 Root[Element]</li>
+<li>3.Root[Element]尝试调用<code>mount</code>方法将自己挂载到父Element上，因为自己就是root了，所以没有父Element，挂空了</li>
+<li>4.mount的过程中会调用Widget的<code>createRenderObject</code>,创建了 Root[RenderObject]</li>
+</ul>
+<p>它的child，也就是我们传入的app是怎么挂载父控件上的呢？</p>
+<ul>
+<li>5.我们将app作为Root[Widget]（也就是 RenderObjectToWidgetAdapter），appp[Widget]也就成了为root[Widget]的child[Widget]</li>
+<li>6….[update]…  child[Widget]的Element这个时候并不是直接被create出来的，这中间走了一步WidgetTree的第一次的刷新流程，我们先一笔带过</li>
+<li>7.调用<code>createElement</code>方法创建出Child[Element]</li>
+<li>8.调用Element的<code>mount</code>方法,将自己挂载到Root[Element]上</li>
+<li>9.挂载的同时，调用<code>widget.createRenderObject</code>,创建Child[RenderObject]</li>
+<li>10.创建完成后，调用<code>attachRenderObject</code>,完成和Root[RenderObject]的链接</li>
+</ul>
+<p>就这样，WidgetTree、ElementTree、RenderObject创建完成，并有各自的链接关系。</p>
+<p>通过上图我们可以看到，虽然createRenderObject方法的实现是在Widget当中，但持有RenderObject引用的却是Element。</p>
+<p>这可也可以理解的嘛~ Widget在不停的变换，Element相对稳定并持有RenderObject，当Element都被换掉的时候，RenderObject也就该被下掉了。</p>
+<p>另外在<code>attachToRenderTree</code>方法里我们也可以这段代码：<code>element._newWidget = this;</code>。这里的this是Widget自身。element也持有了widget的引用。 element就是Widget 和RenderObject的中间商，它也确实在赚差价……</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/chajia.png" alt=""></p>
+<p>这个时候Root Widget，Root Element，Root RenderObject都已经创建完成并且三者链接成功。将军您看还有什么问题吗？</p>
+<p>将军：“Flutter内部还有中间商赚差价呢？真腐败！你刚才说第6不已经执行了一次刷新流程是什么意思？”</p>
+<p>子Widget的首次初始化和后续发生变化时Element tree的变化流程是一样的，我们马上就讲！</p>
+<h3 id="Flutter的刷新流程：Element的复用"><a href="#Flutter的刷新流程：Element的复用" class="headerlink" title="Flutter的刷新流程：Element的复用"></a>Flutter的刷新流程：Element的复用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">attachRootWidget -&gt; attachToRenderTree</span><br><span class="line"></span><br><span class="line">RenderObjectToWidgetElement&lt;T&gt; attachToRenderTree(BuildOwner owner, [RenderObjectToWidgetElement&lt;T&gt; element]) &#123;</span><br><span class="line">    if (element == null) &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      element._newWidget = this;</span><br><span class="line">      element.markNeedsBuild();</span><br><span class="line">    &#125;</span><br><span class="line">    return element;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>我们会看到<code>attachToRenderTree</code>方法最后还调用了<code>element.markNeedsBuild();</code> 敲黑板！记住这句话，很重要！（将军：“你还给我敲黑板呢？”）</p>
+<p>Flutter如果想要刷新界面，需要在StatefulWidget里调用<code>setState()</code>方法，<code>setState()</code>干啥了呢？</p>
+<p>@protected<br>void setState(VoidCallback fn) {<br>    …<br>    _element.markNeedsBuild();<br>}</p>
+<p>哈哈哈~是不是和<code>attachToRenderTree</code>中最后调用的方法一样！</p>
+<p>继续这样追着代码看，我怕将军您睡着了，所以我们后面我竟可能用少的源码去进行讲解！</p>
+<p>将军我们实际演练一下，假设Flutter派出了这么一个WidgetTree:</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/demoTree.png" alt=""></p>
+<h4 id="刷新第1步：Element标记自身为dirty，并通知buildOwner处理"><a href="#刷新第1步：Element标记自身为dirty，并通知buildOwner处理" class="headerlink" title="刷新第1步：Element标记自身为dirty，并通知buildOwner处理"></a>刷新第1步：Element标记自身为dirty，并通知buildOwner处理</h4><p>当对方想改变下方Text Widget的文案时，会在MyStatefulWidget内部调用<code>setState((){_title=&quot;ttt&quot;})</code> （点击事件没写，暂时先靠想象），之后该widget对应的element将自身标记为<code>dirty</code>状态,并调用<code>owner.scheduleBuildFor(this);</code>通知buildOwner进行处理。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/dirty1.png" alt=""></p>
+<p>后续MyStatefulWidget的build方法一定会被执行，执行后，会创建新的子Widget出来，原来的子Widget便被抛弃掉了（将军：“好好的一个对象就这么被浪费了，哎……现在的年轻人~”）。</p>
+<p>原来的子Widget肯定是没救了，但他们的Element大概率还是有救的。</p>
+<h4 id="刷新第2步：buildOwner将element添加到集合-dirtyElements中，并通知ui-window安排新的一帧"><a href="#刷新第2步：buildOwner将element添加到集合-dirtyElements中，并通知ui-window安排新的一帧" class="headerlink" title="刷新第2步：buildOwner将element添加到集合_dirtyElements中，并通知ui.window安排新的一帧"></a>刷新第2步：buildOwner将element添加到集合_dirtyElements中，并通知ui.window安排新的一帧</h4><p>buildOwner会将所有dirty的Element添加到_dirtyElements当中，等待下一帧绘制时集中处理。</p>
+<p>还会调用<code>ui.window.scheduleFrame();</code>通知底层渲染引擎安排新的一帧处理。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/scheduleFrame2.png" alt=""></p>
+<h4 id="刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法"><a href="#刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法" class="headerlink" title="刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法"></a>刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法</h4><p>这里很重要，所以用代码讲更清晰！</p>
+<p><code>void buildScope(Element context, [VoidCallback callback]){...}</code><br>buildScope需要传入一个Element的参数，通过字面意思我们应该能理解，大概就是对这个Element以下（包含）的范围rebuild。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">void buildScope(Element context, [VoidCallback callback]) &#123;</span><br><span class="line">    ...</span><br><span class="line">    try &#123;</span><br><span class="line">		...</span><br><span class="line">		//1.排序</span><br><span class="line">      _dirtyElements.sort(Element._sort);</span><br><span class="line">     	...</span><br><span class="line">      int dirtyCount = _dirtyElements.length;</span><br><span class="line">      int index = 0;</span><br><span class="line">      while (index &lt; dirtyCount) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">        	//2.遍历rebuild</span><br><span class="line">          _dirtyElements[index].rebuild();</span><br><span class="line">        &#125; catch (e, stack) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        index += 1;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; finally &#123;</span><br><span class="line">      for (Element element in _dirtyElements) &#123;</span><br><span class="line">        element._inDirtyList = false;</span><br><span class="line">      &#125;</span><br><span class="line">      //3.清空</span><br><span class="line">      _dirtyElements.clear();</span><br><span class="line">		...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h5 id="3-1步：按照Element的深度从小到大，对-dirtyElements进行排序"><a href="#3-1步：按照Element的深度从小到大，对-dirtyElements进行排序" class="headerlink" title="3.1步：按照Element的深度从小到大，对_dirtyElements进行排序"></a>3.1步：按照Element的深度从小到大，对_dirtyElements进行排序</h5><p>为啥要排序呢？因为父Widget的build方法必然会触发子Widget的build，如果先build了子Widget，后面再build父Widget时，子Widget又要被build一次。所以这样排序之后，可以避免子Widget的重复build。</p>
+<h5 id="3-2步：遍历执行-dirtyElements当中element的rebuild方法"><a href="#3-2步：遍历执行-dirtyElements当中element的rebuild方法" class="headerlink" title="3.2步：遍历执行_dirtyElements当中element的rebuild方法"></a>3.2步：遍历执行_dirtyElements当中element的rebuild方法</h5><p>值得一提的是，遍历执行的过程中，也有可能会有新的element被加入到_dirtyElements集合中，此时会根据dirtyElements集合的长度判断是否有新的元素进来了，如果有，就重新排序。</p>
+<p>element的rebuild方法最终会调用<code>performRebuild()</code>,而<code>performRebuild()</code>不同的Element有不同的实现</p>
+<h5 id="3-3步：遍历结束之后，清空dirtyElements集合"><a href="#3-3步：遍历结束之后，清空dirtyElements集合" class="headerlink" title="3.3步：遍历结束之后，清空dirtyElements集合"></a>3.3步：遍历结束之后，清空dirtyElements集合</h5><h4 id="刷新第4步：执行performRebuild"><a href="#刷新第4步：执行performRebuild" class="headerlink" title="刷新第4步：执行performRebuild()"></a>刷新第4步：执行performRebuild()</h4><p>performRebuild()不同的Element有不同的实现，我们暂时只看最常用的两个Element：</p>
+<ul>
+<li>ComponentElement，是StatefulWidget和StatelessElement的父类</li>
+<li>RenderObjectElement， 是有渲染功能的Element的父类</li>
+</ul>
+<h5 id="ComponentElement的performRebuild"><a href="#ComponentElement的performRebuild" class="headerlink" title="ComponentElement的performRebuild()"></a>ComponentElement的performRebuild()</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void performRebuild() &#123;</span><br><span class="line">    Widget built;</span><br><span class="line">    try &#123;</span><br><span class="line">      built = build();</span><br><span class="line">    &#125; </span><br><span class="line">    ...</span><br><span class="line">    try &#123;</span><br><span class="line">      _child = updateChild(_child, built, slot);</span><br><span class="line">    &#125; </span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>执行element的<code>build();</code>，以StatefulElement的build方法为例：<code>Widget build() =&gt; state.build(this);</code>。 就是执行了我们复写的StatefulWidget的state的build方法啦~</p>
+<p>执行build方法build出来的是啥呢? 当然就是这个StatefulWidget的子Widget了。重点来了！敲黑板！！（将军：“又给我敲黑板？？”）Element就是在这个地方赚差价的！</p>
+<p><code>_child = updateChild(_child, built, slot);</code> </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Element updateChild(Element child, Widget newWidget, dynamic newSlot) &#123;</span><br><span class="line">	...</span><br><span class="line">		//1</span><br><span class="line">    if (newWidget == null) &#123;</span><br><span class="line">      if (child != null)</span><br><span class="line">        deactivateChild(child);</span><br><span class="line">      return null;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    if (child != null) &#123;</span><br><span class="line">    	//2</span><br><span class="line">      if (child.widget == newWidget) &#123;</span><br><span class="line">        if (child.slot != newSlot)</span><br><span class="line">          updateSlotForChild(child, newSlot);</span><br><span class="line">        return child;</span><br><span class="line">      &#125;</span><br><span class="line">      //3</span><br><span class="line">      if (Widget.canUpdate(child.widget, newWidget)) &#123;</span><br><span class="line">        if (child.slot != newSlot)</span><br><span class="line">          updateSlotForChild(child, newSlot);</span><br><span class="line">        child.update(newWidget);</span><br><span class="line">        return child;</span><br><span class="line">      &#125;</span><br><span class="line">      deactivateChild(child);</span><br><span class="line">    &#125;</span><br><span class="line">    //4</span><br><span class="line">    return inflateWidget(newWidget, newSlot);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>参数child 是上一次Element挂载的child Element,  newWidget 是刚刚build出来的。updateChild有四种可能的情况：</p>
+<ul>
+<li>1.如果刚build出来的widget等于null，说明这个控件被删除了，child Element可以被删除了。</li>
+</ul>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/meile.png" alt=""></p>
+<ul>
+<li>2.如果child的widget和新build出来的一样（Widget复用了），就看下位置一样不，不一样就更新下，一样就直接return了。Element还是旧的Element</li>
+</ul>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/update2.png" alt=""></p>
+<ul>
+<li>3.看下Widget是否可以update，<code>Widget.canUpdate</code>的逻辑是<strong>判断key值和运行时类型</strong>是否相等。如果满足条件的话，就更新，并返回。</li>
+</ul>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/update3.png" alt=""></p>
+<p><strong>中间商的差价哪来的呢？只要新build出来的Widget和上一次的类型和Key值相同，Element就会被复用！由此也就保证了虽然Widget在不停的新建，但只要不发生大的变化，那Element是相对稳定的，也就保证了RenderObject是稳定的！</strong></p>
+<ul>
+<li>4.如果上述三个条件都没有满足的话，就调用 <code>inflateWidget()</code> 创建新的Element</li>
+</ul>
+<p>这里再看下<code>inflateWidget()</code>方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Element inflateWidget(Widget newWidget, dynamic newSlot) &#123;</span><br><span class="line">    final Key key = newWidget.key;</span><br><span class="line">    if (key is GlobalKey) &#123;</span><br><span class="line">      final Element newChild = _retakeInactiveElement(key, newWidget);</span><br><span class="line">      if (newChild != null) &#123;</span><br><span class="line">        newChild._activateWithParent(this, newSlot);</span><br><span class="line">        final Element updatedChild = updateChild(newChild, newWidget, newSlot);</span><br><span class="line">        return updatedChild;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    final Element newChild = newWidget.createElement();</span><br><span class="line">    newChild.mount(this, newSlot);</span><br><span class="line">    return newChild;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>首先会尝试通过GlobalKey去查找可复用的Element，复用失败就调用Widget的方法创建新的Element，然后调用mount方法，将自己挂载到父Element上去，mount之前我们也讲过，会在这个方法里创建新的RenderObject。</p>
+<p><img src="/2019/01/02/帝国的纷争-FlutterUI绘制解析/update4.png" alt=""></p>
+<h5 id="RenderObjectElement的performRebuild"><a href="#RenderObjectElement的performRebuild" class="headerlink" title="RenderObjectElement的performRebuild()"></a>RenderObjectElement的performRebuild()</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@override</span><br><span class="line">  void performRebuild() &#123;</span><br><span class="line">    widget.updateRenderObject(this, renderObject);</span><br><span class="line">    _dirty = false;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>与ComponentElement的不同之处在于，没有去build，而是调用了<code>updateRenderObject</code>方法更新RenderObject。</p>
+<p>不同Widget也有不同的updateRenderObject实现，我们看一下最常用的RichText，也就是Text。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">void updateRenderObject(BuildContext context, RenderParagraph renderObject) &#123;</span><br><span class="line">    assert(textDirection != null || debugCheckHasDirectionality(context));</span><br><span class="line">    renderObject</span><br><span class="line">      ..text = text</span><br><span class="line">      ..textAlign = textAlign</span><br><span class="line">      ..textDirection = textDirection ?? Directionality.of(context)</span><br><span class="line">      ..softWrap = softWrap</span><br><span class="line">      ..overflow = overflow</span><br><span class="line">      ..textScaleFactor = textScaleFactor</span><br><span class="line">      ..maxLines = maxLines</span><br><span class="line">      ..locale = locale ?? Localizations.localeOf(context, nullOk: true);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>一些看起来比较熟悉的赋值操作，像不像Android的view呀？ 要不怎么说RenderObject实际相当于Android里的View呢。</p>
+<p>到这里你基本就明白了Element是如何在中间应对Widget的多变，保障RenderObject的相对不变了吧~</p>
+<h3 id="Flutter的刷新流程：PipelineOwner对RenderObject的管理"><a href="#Flutter的刷新流程：PipelineOwner对RenderObject的管理" class="headerlink" title="Flutter的刷新流程：PipelineOwner对RenderObject的管理"></a>Flutter的刷新流程：PipelineOwner对RenderObject的管理</h3><p>在底层引擎最终回到Dart层，最终会执行<code>WidgetsBinding 的drawFrame ()</code></p>
+<p>WidgetsBinding</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void drawFrame() &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">      if (renderViewElement != null)</span><br><span class="line">        buildOwner.buildScope(renderViewElement);</span><br><span class="line">      super.drawFrame();</span><br><span class="line">      buildOwner.finalizeTree();</span><br><span class="line">    &#125; finally &#123;</span><br><span class="line">    &#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>buildOwner.buildScope(renderViewElement);</code>就是我们上面讲过的。</p>
+<p>下面看一下<code>super.drawFrame();</code> 主要是PipelineOwner对RenderObject的管理我们暂时放在下期介绍。</p>
+<h3 id="Flutter的刷新流程：清理"><a href="#Flutter的刷新流程：清理" class="headerlink" title="Flutter的刷新流程：清理"></a>Flutter的刷新流程：清理</h3><p>drawFrame方法在最后执行了<code>buildOwner.finalizeTree();</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">void finalizeTree() &#123;</span><br><span class="line">    Timeline.startSync(&apos;Finalize tree&apos;, arguments: timelineWhitelistArguments);</span><br><span class="line">    try &#123;</span><br><span class="line">      lockState(() &#123;</span><br><span class="line">        _inactiveElements._unmountAll(); // this unregisters the GlobalKeys</span><br><span class="line">      &#125;);</span><br><span class="line">     ...</span><br><span class="line">    &#125; catch (e, stack) &#123;</span><br><span class="line">      _debugReportException(&apos;while finalizing the widget tree&apos;, e, stack);</span><br><span class="line">    &#125; finally &#123;</span><br><span class="line">      Timeline.finishSync();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>在做最后的清理工作。</p>
+<p>将军：“_inactiveElements”又是个啥？之前咋没见过？</p>
+<p>还记的前面讲Element赚差价的updateChild方法吗？所有没用的element都调用了<code>deactivateChild</code>方法进行回收：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void deactivateChild(Element child) &#123;</span><br><span class="line">  child._parent = null;</span><br><span class="line">  child.detachRenderObject();</span><br><span class="line">  owner._inactiveElements.add(child); // this eventually calls child.deactivate()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就在这里将被废弃的element添加到了_inactiveElements当中。</p>
+<p>另外在废弃element之后，调用<code>inflateWidget</code>创建新的element时，还调用了<code>_retakeInactiveElement</code>尝试通过GlobalKey复用element，此时的复用池也是在_inactiveElements当中。</p>
+<p>从这里也能了解到，如果你没有在一帧里通过GlobeKey完成Element的复用，_inactiveElements在最后将被清空，就没办法在复用了。</p>
+<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><p>将军，现在您对Flutter的绘制流程有了初步的了解了吗？</p>
+<p>将军：“有些了解了，但你讲了这么多，对比起来我们Android，听起来Flutter这一套绘制流程没啥缺点？ ”</p>
+<p>当然有了，我们现在也只了解了Flutter的冰山一角，很多东西还没有发现。</p>
+<p>但就只说动态向ViewTree中插入组件这一条，Flutter就没有我们灵活。比如Toast，现在的Toast组件都只能依赖methodChannel去调用我们原生的Toast。而Flutter提供的Scaffold组件，也是通过预先埋好的组件坑位，才实现了Material风格的Toast。</p>
+<p>因为Flutter是声明式的，想要在运行中随时向WidgetTree插入一个Widget，目前还没有成熟接口。</p>
+<p>但相信随着Flutter开发者对Flutter内部原理越来越熟悉，这种问题很快就会被解决的。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Flutter/" rel="tag">#Flutter</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/02/Flutter-你还在滥用StatefulWidget吗/" rel="next" title="Flutter-你还在滥用StatefulWidget吗">
+                <i class="fa fa-chevron-left"></i> Flutter-你还在滥用StatefulWidget吗
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="lizhaoxuan">
+          <p class="site-author-name" itemprop="name">lizhaoxuan</p>
+          <p class="site-description motion-element" itemprop="description">From toy to tool!</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">21</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#故事"><span class="nav-number">2.</span> <span class="nav-text">故事</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-Flutter-编程范式"><span class="nav-number">2.1.</span> <span class="nav-text">Android/Flutter 编程范式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Widget、Element、RenderObject概念"><span class="nav-number">2.2.</span> <span class="nav-text">Widget、Element、RenderObject概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Widget、Element、RenderObject之间的关系"><span class="nav-number">2.3.</span> <span class="nav-text">Widget、Element、RenderObject之间的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Widget、Element、RenderObject-的第一次创建与关联"><span class="nav-number">2.4.</span> <span class="nav-text">Widget、Element、RenderObject 的第一次创建与关联</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Flutter的刷新流程：Element的复用"><span class="nav-number">2.5.</span> <span class="nav-text">Flutter的刷新流程：Element的复用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#刷新第1步：Element标记自身为dirty，并通知buildOwner处理"><span class="nav-number">2.5.1.</span> <span class="nav-text">刷新第1步：Element标记自身为dirty，并通知buildOwner处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#刷新第2步：buildOwner将element添加到集合-dirtyElements中，并通知ui-window安排新的一帧"><span class="nav-number">2.5.2.</span> <span class="nav-text">刷新第2步：buildOwner将element添加到集合_dirtyElements中，并通知ui.window安排新的一帧</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法"><span class="nav-number">2.5.3.</span> <span class="nav-text">刷新第3步：底层引擎最终回到Dart层，并执行buildOwner的buildScope方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1步：按照Element的深度从小到大，对-dirtyElements进行排序"><span class="nav-number">2.5.3.1.</span> <span class="nav-text">3.1步：按照Element的深度从小到大，对_dirtyElements进行排序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2步：遍历执行-dirtyElements当中element的rebuild方法"><span class="nav-number">2.5.3.2.</span> <span class="nav-text">3.2步：遍历执行_dirtyElements当中element的rebuild方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-3步：遍历结束之后，清空dirtyElements集合"><span class="nav-number">2.5.3.3.</span> <span class="nav-text">3.3步：遍历结束之后，清空dirtyElements集合</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#刷新第4步：执行performRebuild"><span class="nav-number">2.5.4.</span> <span class="nav-text">刷新第4步：执行performRebuild()</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ComponentElement的performRebuild"><span class="nav-number">2.5.4.1.</span> <span class="nav-text">ComponentElement的performRebuild()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RenderObjectElement的performRebuild"><span class="nav-number">2.5.4.2.</span> <span class="nav-text">RenderObjectElement的performRebuild()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Flutter的刷新流程：PipelineOwner对RenderObject的管理"><span class="nav-number">2.6.</span> <span class="nav-text">Flutter的刷新流程：PipelineOwner对RenderObject的管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Flutter的刷新流程：清理"><span class="nav-number">2.7.</span> <span class="nav-text">Flutter的刷新流程：清理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结尾"><span class="nav-number">3.</span> <span class="nav-text">结尾</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lizhaoxuan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+    <script type="text/javascript">
+      var disqus_shortname = 'lizhaoxuan';
+      var disqus_identifier = '2019/01/02/帝国的纷争-FlutterUI绘制解析/';
+      var disqus_title = "帝国的纷争-Flutter-UI绘制解析";
+      var disqus_url = 'http://lizhaoxuan.github.io/2019/01/02/帝国的纷争-FlutterUI绘制解析/';
+
+      function run_disqus_script(disqus_script){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      }
+
+      run_disqus_script('count.js');
+      
+        run_disqus_script('embed.js');
+      
+    </script>
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("Lb3BBgF3jv5bwrRc8KBz1cuP-gzGzoHsz", "kaPIOk4dBLRc4wfrlc2Tffrm");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
